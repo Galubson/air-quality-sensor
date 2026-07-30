@@ -1,0 +1,19 @@
+{
+  "name": "Czujnik jakosci powietrza",
+  "version": "1.0.0",
+  "new_install_prompt_erase": true,
+  "builds": [
+    {
+      "chipFamily": "ESP32",
+      "parts": [
+        { "path": "merged-devkit_v1.bin", "offset": 0 }
+      ]
+    },
+    {
+      "chipFamily": "ESP32-S3",
+      "parts": [
+        { "path": "merged-xiao_esp32s3.bin", "offset": 0 }
+      ]
+    }
+  ]
+}

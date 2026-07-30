@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Czujnik jakości powietrza - zainstaluj z przeglądarki</title>
+<meta name="description" content="Domowy czujnik jakości powietrza na ESP32: PM1/2.5/4/10, temperatura, wilgotność, ciśnienie, sterowanie przekaźnikiem i integracja z Home Assistant. Zainstaluj firmware bezpośrednio z przeglądarki, bez żadnego programu.">
+<style>
+  :root{
+    --bg:#0b0f14; --bg2:#10151d; --card:#141a23; --border:#212832;
+    --text:#eef1f5; --text-dim:#9aa5b3; --text-mute:#6b7787;
+    --accent:#4fd1c5; --accent-dim:#2c8f85; --accent-text:#04211d;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;-webkit-font-smoothing:antialiased}
+  a{color:var(--accent);text-decoration:none}
+  a:hover{text-decoration:underline}
+  .wrap{max-width:960px;margin:0 auto;padding:0 24px}
+
+  nav{position:sticky;top:0;z-index:10;background:rgba(11,15,20,.85);backdrop-filter:blur(8px);border-bottom:1px solid var(--border)}
+  nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+  .brand{font-weight:700;font-size:15px;color:var(--text);display:flex;align-items:center;gap:8px}
+  .brand:hover{color:var(--text);text-decoration:none}
+  .navlinks{display:flex;gap:24px;font-size:14px}
+  .navlinks a{color:var(--text-dim)}
+  .navlinks a:hover{color:var(--text);text-decoration:none}
+
+  header.hero{padding:80px 0 48px;text-align:center}
+  .eyebrow{display:inline-block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);background:rgba(79,209,197,.1);border:1px solid rgba(79,209,197,.25);padding:5px 14px;border-radius:20px;margin-bottom:22px}
+  h1{font-size:44px;line-height:1.15;margin:0 0 18px;font-weight:700;letter-spacing:-.02em}
+  h1 em{color:var(--accent);font-style:normal}
+  .lead{font-size:17px;color:var(--text-dim);max-width:600px;margin:0 auto 28px}
+
+  .pills{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin-bottom:36px}
+  .pill{font-size:13px;color:var(--text-dim);border:1px solid var(--border);background:var(--bg2);padding:6px 14px;border-radius:20px}
+
+  .cta-row{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border-radius:10px;font-size:15px;font-weight:600;border:1px solid transparent;cursor:pointer}
+  .btn-primary{background:var(--accent);color:var(--accent-text)}
+  .btn-primary:hover{background:#3fc1b4;text-decoration:none}
+  .btn-secondary{background:transparent;color:var(--text);border-color:var(--border)}
+  .btn-secondary:hover{border-color:var(--text-mute);text-decoration:none}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin:56px 0}
+  .stat{background:var(--bg2);padding:22px 16px;text-align:center}
+  .stat b{display:block;font-size:22px;color:var(--accent);margin-bottom:4px}
+  .stat span{font-size:12px;color:var(--text-mute)}
+
+  section{padding:56px 0}
+  h2{font-size:26px;margin:0 0 8px;letter-spacing:-.01em}
+  .section-lead{color:var(--text-dim);margin:0 0 36px;max-width:560px}
+
+  .features{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .feature{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:22px}
+  .feature .icon{font-size:22px;margin-bottom:12px}
+  .feature h3{font-size:15px;margin:0 0 8px}
+  .feature p{font-size:14px;color:var(--text-dim);margin:0}
+
+  .install-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:32px}
+  .req-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:24px}
+  .req{font-size:12px;padding:5px 12px;border-radius:16px;background:var(--bg2);border:1px solid var(--border);color:var(--text-dim)}
+  .req.warn{color:#f6c453;border-color:rgba(246,196,83,.3);background:rgba(246,196,83,.08)}
+
+  ol.steps{list-style:none;counter-reset:step;margin:0 0 28px;padding:0;display:grid;gap:12px}
+  ol.steps li{counter-increment:step;display:flex;gap:14px;font-size:14px;color:var(--text-dim)}
+  ol.steps li::before{content:counter(step);flex-shrink:0;width:26px;height:26px;border-radius:50%;background:var(--bg2);border:1px solid var(--border);color:var(--text);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center}
+
+  esp-web-install-button{
+    --esp-tools-button-color:var(--accent);
+    --esp-tools-button-text-color:var(--accent-text);
+    --esp-tools-button-border-radius:10px;
+    display:block;
+  }
+  esp-web-install-button button{padding:14px 26px;font-size:15px;font-weight:700;border:none;border-radius:10px;background:var(--accent);color:var(--accent-text);cursor:pointer;width:100%}
+  .install-msg{font-size:13px;color:var(--text-mute);margin-top:16px;text-align:center}
+  code{background:var(--bg2);border:1px solid var(--border);padding:2px 6px;border-radius:5px;font-size:13px}
+
+  .hw-note{margin-top:20px;font-size:13px;color:var(--text-mute)}
+
+  .preview-wrap{display:flex;justify-content:center;gap:20px;flex-wrap:wrap}
+  .preview-frame{background:var(--card);border:1px solid var(--border);border-radius:20px;padding:14px;box-shadow:0 30px 60px -20px rgba(0,0,0,.6)}
+  .preview-frame img{display:block;width:300px;max-width:100%;height:auto;border-radius:12px}
+  .preview-caption{text-align:center;color:var(--text-mute);font-size:13px;margin-top:18px}
+
+  footer{border-top:1px solid var(--border);padding:32px 0;text-align:center}
+  footer .links{display:flex;justify-content:center;gap:20px;font-size:13px;margin-bottom:10px}
+  footer .fine{font-size:12px;color:var(--text-mute)}
+
+  @media (max-width:720px){
+    h1{font-size:32px}
+    .features{grid-template-columns:1fr}
+    .stats{grid-template-columns:repeat(2,1fr)}
+    .navlinks{display:none}
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap">
+    <a href="#" class="brand">🌬️ czujnik-powietrza</a>
+    <div class="navlinks">
+      <a href="#features">Funkcje</a>
+      <a href="#preview">Podgląd</a>
+      <a href="#install">Instalacja</a>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">DIY · ESP32 · open firmware</span>
+    <h1>Twoje powietrze,<br><em>pod kontrolą.</em></h1>
+    <p class="lead">Domowy czujnik jakości powietrza: PM1/2.5/4/10, temperatura, wilgotność i ciśnienie na żywo, automatyczne sterowanie rekuperacją i integracja z Home Assistant - bez chmury, bez konta, wszystko w Twojej sieci.</p>
+
+    <div class="pills">
+      <span class="pill">🔒 dane zostają w Twojej sieci</span>
+      <span class="pill">🏠 integracja z Home Assistant</span>
+      <span class="pill">🌗 tryb jasny / ciemny</span>
+      <span class="pill">🆓 open source</span>
+    </div>
+
+    <div class="cta-row">
+      <a href="#install" class="btn btn-primary">⚡ Zainstaluj z przeglądarki</a>
+      <a href="#features" class="btn btn-secondary">Zobacz funkcje</a>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+  <div class="stats">
+    <div class="stat"><b>4</b><span>frakcje pyłu PM</span></div>
+    <div class="stat"><b>5 s</b><span>odświeżanie odczytów</span></div>
+    <div class="stat"><b>0</b><span>wymaganych kont</span></div>
+    <div class="stat"><b>2 min</b><span>instalacja z przeglądarki</span></div>
+  </div>
+</div>
+
+<section id="features">
+  <div class="wrap">
+    <h2>Co potrafi</h2>
+    <p class="section-lead">Zbudowany na SPS30, BME280 i SHT40 - wszystko dostępne z lokalnego panelu WWW, bez żadnej aplikacji.</p>
+    <div class="features">
+      <div class="feature">
+        <div class="icon">📊</div>
+        <h3>Odczyty na żywo</h3>
+        <p>PM1.0/2.5/4.0/10, temperatura, wilgotność i ciśnienie - aktualizowane co kilka sekund, z kolorowym wskaźnikiem jakości powietrza.</p>
+      </div>
+      <div class="feature">
+        <div class="icon">🔌</div>
+        <h3>Sterowanie przekaźnikiem</h3>
+        <p>Automatyczne wyłączanie rekuperacji przez Shelly przy złej jakości powietrza na zewnątrz (np. dym, smog) - albo ręcznie, jednym przełącznikiem w panelu.</p>
+      </div>
+      <div class="feature">
+        <div class="icon">🏠</div>
+        <h3>Home Assistant przez MQTT</h3>
+        <p>Automatyczne wykrywanie encji (MQTT discovery) - status połączenia widoczny wprost w panelu, bez zgadywania.</p>
+      </div>
+      <div class="feature">
+        <div class="icon">📶</div>
+        <h3>Łatwa zmiana sieci WiFi</h3>
+        <p>Zmiana lub zapomnienie sieci wprost z panelu, bez ponownego programowania urządzenia.</p>
+      </div>
+      <div class="feature">
+        <div class="icon">🔘</div>
+        <h3>Fizyczny reset</h3>
+        <p>Wbudowany przycisk BOOT przywraca ustawienia fabryczne - na wypadek utraty dostępu do sieci.</p>
+      </div>
+      <div class="feature">
+        <div class="icon">🌐</div>
+        <h3>Bez znajomości adresu IP</h3>
+        <p>Panel zawsze dostępny pod <code>czujnik-powietrza.local</code> dzięki mDNS.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="preview">
+  <div class="wrap">
+    <h2>Zobacz panel na żywo</h2>
+    <p class="section-lead">Tak wygląda urządzenie po skonfigurowaniu - odczyty, sterowanie przekaźnikiem, sieć WiFi i integracja z Home Assistant, wszystko z jednego miejsca w przeglądarce.</p>
+    <div class="preview-wrap">
+      <div class="preview-frame">
+        <img src="panel-preview-1.png" alt="Górna część panelu: odczyty PM2.5/PM1.0/PM4.0/PM10, temperatura, wilgotność, ciśnienie oraz sterowanie przekaźnikiem Shelly">
+      </div>
+      <div class="preview-frame">
+        <img src="panel-preview-2.png" alt="Dolna część panelu: ustawienia sieci WiFi oraz status i konfiguracja integracji z Home Assistant przez MQTT">
+      </div>
+    </div>
+    <p class="preview-caption">Panel WWW, dostępny pod <code>czujnik-powietrza.local</code> - działa w każdej przeglądarce w sieci domowej</p>
+  </div>
+</section>
+
+<section id="install">
+  <div class="wrap">
+    <h2>Instalacja w dwie minuty</h2>
+    <p class="section-lead">Podłącz płytkę przez USB, kliknij Zainstaluj, wybierz port. Bez Arduino IDE, bez PlatformIO, bez niczego do pobrania.</p>
+
+    <div class="install-card">
+      <div class="req-row">
+        <span class="req">Chrome lub Edge</span>
+        <span class="req">komputer, nie telefon</span>
+        <span class="req">kabel USB z transmisją danych</span>
+        <span class="req warn">⚠ Firefox i Safari nie zadziałają</span>
+      </div>
+
+      <ol class="steps">
+        <li>Podłącz płytkę ESP32 (XIAO ESP32S3 lub DevKitV1) do komputera</li>
+        <li>Kliknij przycisk instalacji poniżej</li>
+        <li>Wybierz port szeregowy z listy, którą pokaże przeglądarka</li>
+        <li>Poczekaj, aż pasek postępu dojdzie do końca</li>
+      </ol>
+
+      <esp-web-install-button manifest="manifest.json">
+        <button slot="activate">⚡ Zainstaluj firmware</button>
+        <span slot="unsupported">Ta przeglądarka nie obsługuje instalacji przez USB. Otwórz tę stronę w Chrome lub Edge na komputerze.</span>
+        <span slot="not-allowed">Ta strona musi być wczytana przez HTTPS, żeby instalacja zadziałała.</span>
+      </esp-web-install-button>
+
+      <p class="install-msg">Płytka jest wykrywana automatycznie - ta sama strona obsługuje zarówno XIAO ESP32S3, jak i ESP32-DevKitV1.</p>
+    </div>
+
+    <p class="hw-note">Po instalacji odłącz i podłącz ponownie zasilanie. Urządzenie utworzy sieć WiFi <code>AirQuality-Setup-XXXX</code> - połącz się z nią telefonem, żeby dokończyć konfigurację. Gotowy panel będzie dostępny pod <code>http://czujnik-powietrza.local/</code>.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div class="links">
+      <a href="manifest.json">Manifest</a>
+      <a href="https://esphome.github.io/esp-web-tools/" target="_blank" rel="noopener">ESP Web Tools</a>
+    </div>
+    <div class="fine">Projekt DIY - działa lokalnie, bez chmury i bez konta</div>
+  </div>
+</footer>
+
+<script type="module" src="https://unpkg.com/esp-web-tools@10/dist/web/install-button.js?module"></script>
+</body>
+</html>
