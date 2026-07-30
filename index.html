@@ -104,6 +104,7 @@
       <a href="#features">Funkcje</a>
       <a href="#preview">Podgląd</a>
       <a href="#install">Instalacja</a>
+      <a href="#setup">Konfiguracja</a>
     </div>
   </div>
 </nav>
@@ -220,8 +221,24 @@
 
       <p class="install-msg">Płytka jest wykrywana automatycznie - ta sama strona obsługuje zarówno XIAO ESP32S3, jak i ESP32-DevKitV1.</p>
     </div>
+  </div>
+</section>
 
-    <p class="hw-note">Po instalacji odłącz i podłącz ponownie zasilanie. Urządzenie utworzy sieć WiFi <code>AirQuality-Setup-XXXX</code> - połącz się z nią telefonem, żeby dokończyć konfigurację. Gotowy panel będzie dostępny pod <code>http://czujnik-powietrza.local/</code>.</p>
+<section id="setup">
+  <div class="wrap">
+    <h2>Po instalacji: pierwsze uruchomienie</h2>
+    <p class="section-lead">Firmware masz już wgrane - teraz kilka kroków, żeby czujnik połączył się z Twoją siecią.</p>
+
+    <div class="install-card">
+      <ol class="steps">
+        <li>Odłącz i podłącz ponownie zasilanie płytki</li>
+        <li>Na telefonie lub komputerze znajdź w liście sieci WiFi punkt dostępu o nazwie <code>AirQuality-Setup-XXXX</code> i połącz się z nim</li>
+        <li>W oknie, które się otworzy, wybierz swoją domową sieć WiFi i podaj hasło. Opcjonalnie możesz od razu podać adres IP przekaźnika Shelly i próg PM2.5 - wszystko da się później zmienić w panelu</li>
+        <li>Przejdź na stronę <code>http://czujnik-powietrza.local/</code> - to panel czujnika</li>
+      </ol>
+
+      <p class="hw-note">Jeśli strona się nie otwiera: odłącz i podłącz zasilanie jeszcze raz, poczekaj chwilę i spróbuj ponownie. Sprawdź też, czy w liście sieci WiFi nie pojawił się z powrotem punkt dostępu <code>AirQuality-Setup-XXXX</code> - jeśli tak, oznacza to, że urządzenie nie połączyło się z podaną siecią (np. literówka w haśle) i trzeba powtórzyć krok 3.</p>
+    </div>
   </div>
 </section>
 
